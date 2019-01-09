@@ -2,22 +2,42 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class player : MonoBehaviour {
+public class player : MonoBehaviour
+{
 
-    public Transform target;
-    public float offset;
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-        Vector3 pos = transform.position;
-        pos.x = target.position.x + offset;
-        pos.y = target.position.y + offset;
-        pos.z = target.position.z + offset;
-        transform.position = pos;
+    private Rigidbody _rigidbody;
+    private CharacterJoint _characterjoint;
+    Vector3 leave_pos = new Vector3();
+    // Use this for initialization
+    void Start()
+    {
+        _rigidbody = this.GetComponent<Rigidbody>();
+        _characterjoint = this.GetComponent<CharacterJoint>();
+    }
+
+    // Update is called once per frame
+    void FixedUpdate()
+    {
+
+
+        if (Input.GetKey("k"))
+        {
+            Debug.Log(_rigidbody.velocity);
+            leave_pos = _rigidbody.velocity;
+            leave_parent();
+        }
+    }
+
+    public void leave_parent ()
+    {
+        //this._characterjoint.connectedBody = null;
+        Destroy(_characterjoint);
+        leave_stage();
+    }
+
+    public void leave_stage ()
+    {
+        _rigidbody.AddForce(leave_pos);
     }
 }
