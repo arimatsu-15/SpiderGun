@@ -9,6 +9,7 @@ public class player : MonoBehaviour
     private Rigidbody _rigidbody;
     private CharacterJoint _characterjoint;
     Vector3 leave_pos = new Vector3();
+
     // Use this for initialization
     void Start()
     {
@@ -17,13 +18,19 @@ public class player : MonoBehaviour
     }
 
     // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
 
 
         if (Input.GetKey("k"))
         {
             Debug.Log(_rigidbody.velocity);
+            leave_pos = _rigidbody.velocity;
+            leave_parent();
+        }
+
+        if (OVRInput.GetDown(OVRInput.Button.PrimaryTouchpad))
+        {
             leave_pos = _rigidbody.velocity;
             leave_parent();
         }
