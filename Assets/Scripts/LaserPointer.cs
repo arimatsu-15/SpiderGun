@@ -58,35 +58,27 @@ public class LaserPointer : MonoBehaviour
     }
 
 
-    //わけわからん文来た
-    public object ShitenInstance { get; private set; }
+
 
     public void Shot(Transform pointer){
 
-        if (OVRInput.Get(OVRInput.Button.PrimaryTouchpad))
-        {
 
-            if (One){
+
                 var ShitenInstance = Instantiate(ShitenPrefab, pointer.position, pointer.rotation) as GameObject;
                 ShitenInstance.GetComponent<Rigidbody>().AddForce(ShitenInstance.transform.forward * ShitenPower);
-                One = false;
-            }
+                
 
-            else if (OVRInput.GetUp(OVRInput.Button.PrimaryTouchpad))
-            {
 
-                Destroy(ShitenInstance);
-            }
-        }
+       
+
+
 
 
     }
 
-    //わけわからん文来た
-    private void Destroy(object shitenInstance)
-    {
-        throw new NotImplementedException();
-    }
+
+
+
 
 
 
@@ -120,9 +112,11 @@ public class LaserPointer : MonoBehaviour
             _LaserPointerRenderer.SetPosition(1, pointerRay.origin + pointerRay.direction * _MaxDistance);
         }
 
-        if (OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger))
+        if (OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger) && OVRInput.GetDown(OVRInput.Button.PrimaryTouchpad))
         {
             Shot(pointer);
         }
+
+
     }
 }
