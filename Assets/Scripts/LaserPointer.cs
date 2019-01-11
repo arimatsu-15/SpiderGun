@@ -1,12 +1,14 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 /*
  * レーザーポインターを出すクラス
  */
 public class LaserPointer : MonoBehaviour
 {
+
+    bool One;
 
     [SerializeField]
     private Transform _RightHandAnchor; // 右手
@@ -26,7 +28,14 @@ public class LaserPointer : MonoBehaviour
     [SerializeField]
     private GameObject ShitenPrefab;
     [SerializeField]
-    private float ShitenPower = 1500f;
+    private float ShitenPower = 50000f;
+
+
+
+    private void Start()
+    {
+        One = true;
+    }
 
     // コントローラー
     private Transform Pointer
@@ -48,14 +57,45 @@ public class LaserPointer : MonoBehaviour
         }
     }
 
-    private void Shot(Transform pointer){
-        var ShitenInstance = GameObject.Instantiate(ShitenPrefab, pointer.position, pointer.rotation) as GameObject;
-        ShitenInstance.GetComponent<Rigidbody>().AddForce(ShitenInstance.transform.forward * ShitenPower);
-        Destroy(ShitenInstance, 5f);
+
+    //わけわからん文来た
+    public object ShitenInstance { get; private set; }
+
+    public void Shot(Transform pointer){
+
+        if (OVRInput.Get(OVRInput.Button.PrimaryTouchpad))
+        {
+
+            if (One){
+                var ShitenInstance = Instantiate(ShitenPrefab, pointer.position, pointer.rotation) as GameObject;
+                ShitenInstance.GetComponent<Rigidbody>().AddForce(ShitenInstance.transform.forward * ShitenPower);
+                One = false;
+            }
+
+            else if (OVRInput.GetUp(OVRInput.Button.PrimaryTouchpad))
+            {
+
+                Destroy(ShitenInstance);
+            }
+        }
+
+
     }
+
+    //わけわからん文来た
+    private void Destroy(object shitenInstance)
+    {
+        throw new NotImplementedException();
+    }
+
+
+
+
 
     void Update()
     {
+
+
         var pointer = Pointer; // コントローラーを取得
                                // コントローラーがない or LineRendererがなければ何もしない
         if (pointer == null || _LaserPointerRenderer == null)
@@ -80,7 +120,7 @@ public class LaserPointer : MonoBehaviour
             _LaserPointerRenderer.SetPosition(1, pointerRay.origin + pointerRay.direction * _MaxDistance);
         }
 
-        if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
+        if (OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger))
         {
             Shot(pointer);
         }
