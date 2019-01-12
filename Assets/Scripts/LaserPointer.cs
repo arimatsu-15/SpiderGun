@@ -5,8 +5,11 @@ using UnityEngine;
 /*
  * レーザーポインターを出すクラス
  */
+
 public class LaserPointer : MonoBehaviour
 {
+
+
 
     bool One;
 
@@ -34,6 +37,7 @@ public class LaserPointer : MonoBehaviour
 
     private void Start()
     {
+       
         One = true;
     }
 
@@ -63,13 +67,12 @@ public class LaserPointer : MonoBehaviour
     public void Shot(Transform pointer){
 
 
-
-                var ShitenInstance = Instantiate(ShitenPrefab, pointer.position, pointer.rotation) as GameObject;
-                ShitenInstance.GetComponent<Rigidbody>().AddForce(ShitenInstance.transform.forward * ShitenPower);
-                
-
+            var ShitenInstance = Instantiate(ShitenPrefab, pointer.position, pointer.rotation) as GameObject;
+            ShitenInstance.GetComponent<Rigidbody>().AddForce(ShitenInstance.transform.forward * ShitenPower);
 
        
+
+                
 
 
 
@@ -112,7 +115,7 @@ public class LaserPointer : MonoBehaviour
             _LaserPointerRenderer.SetPosition(1, pointerRay.origin + pointerRay.direction * _MaxDistance);
         }
 
-        if (OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger) && OVRInput.GetDown(OVRInput.Button.PrimaryTouchpad))
+        if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
         {
             Shot(pointer);
         }

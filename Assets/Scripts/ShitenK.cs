@@ -12,7 +12,7 @@ public class ShitenK : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        if (OVRInput.GetUp(OVRInput.Button.PrimaryTouchpad))
+        if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger))
         {
             Destroy(this.gameObject);
         }

@@ -29,11 +29,18 @@ public class player : MonoBehaviour
             leave_parent();
         }
 
-        if (OVRInput.GetDown(OVRInput.Button.PrimaryTouchpad))
+        if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger))
         {
             leave_pos = _rigidbody.velocity;
             leave_parent();
         }
+
+
+    }
+
+    void OnCollisionEnter(Collision other)
+    {
+        this.GetComponent<Rigidbody>().velocity = Vector3.zero;
     }
 
     public void leave_parent ()
