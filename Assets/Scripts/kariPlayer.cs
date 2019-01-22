@@ -6,6 +6,8 @@ public class kariPlayer : MonoBehaviour {
     Vector3 playerPos;
     Vector3 shitenPos;
     Vector3 henka;
+    Vector3 nextPlayerPos;
+    Vector3 approaching;
     float distance;
     public GameObject gameManager;
     // Use this for initialization
@@ -22,13 +24,20 @@ public class kariPlayer : MonoBehaviour {
 
             playerPos = this.transform.position;
             shitenPos = gameManager.GetComponent<kariGameManager>().GetShitenPos();
-            if (shitenPos == null)
-            {
-                return;
-            }
             distance = Vector3.Distance(playerPos, shitenPos);
-            henka = (shitenPos - playerPos) / distance * 50f;
-            this.GetComponent<Rigidbody>().position += henka;
+            henka = (shitenPos - playerPos) / distance;
+            approaching = shitenPos - playerPos;
+            this.GetComponent<Rigidbody>().position += henka * 10;
+            nextPlayerPos = this.transform.position;
         }
+        if (OVRInput.GetUp(OVRInput.Button.PrimaryTouchpad))
+        {
+            this.transform.position = nextPlayerPos;
+        }
+
+    }
+
+    public Vector3 GetHenka(){
+        return approaching;
     }
 }

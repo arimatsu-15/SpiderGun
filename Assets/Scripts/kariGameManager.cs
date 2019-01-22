@@ -41,6 +41,8 @@ public class kariGameManager : MonoBehaviour
     float distance;
     Quaternion shitenRot;
 
+    Vector3 conAncer;
+
     GameObject webInstance;
     GameObject shitenInstance;
 
@@ -101,6 +103,7 @@ public class kariGameManager : MonoBehaviour
         }
         if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger))
         {
+            Destroy(webInstance);
             Destroy(shitenInstance);
         }
 
@@ -109,10 +112,19 @@ public class kariGameManager : MonoBehaviour
             shitenPos = webInstance.transform.position;
             shitenRot = webInstance.transform.rotation;
             makeRope(shitenPos, shitenRot);
-
-
-
         }
+
+        if (OVRInput.Get(OVRInput.Button.PrimaryTouchpad)) //タッチパッド
+        {
+            //Vector3 approach = player.GetComponent<kariPlayer>().GetHenka();
+            //conAncer.x = -approach.x;
+            //conAncer.y = -approach.y;
+            //conAncer.z = -approach.z;
+
+            conAncer = player.transform.position - shitenInstance.transform.position;
+            shitenInstance.GetComponent<CharacterJoint>().connectedAnchor = conAncer;
+        }
+
 
 
 

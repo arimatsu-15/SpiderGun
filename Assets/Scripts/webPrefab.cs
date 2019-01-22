@@ -21,7 +21,9 @@ public class webPrefab : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        this.GetComponent<Rigidbody>().velocity = Vector3.zero;//他のオブジェクトと衝突したら止まる
+        Vector3 stopShiten = this.transform.position;
+        //this.GetComponent<Rigidbody>().velocity = Vector3.zero;//他のオブジェクトと衝突したら止まる
+        this.transform.position = stopShiten;
     }
 
 }
