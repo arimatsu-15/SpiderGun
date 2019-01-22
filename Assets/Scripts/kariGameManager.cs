@@ -30,25 +30,19 @@ public class kariGameManager : MonoBehaviour
     [SerializeField]
     private float webPower = 5000f;
 
-    GameObject webInstance;
-
-    int hitting = 0;
-
     [SerializeField]
     private GameObject player;
     [SerializeField]
     private GameObject shitenPrefab;
 
+    Vector3 playerPos;
     Vector3 shitenPos;
+    Vector3 henka;
+    float distance;
     Quaternion shitenRot;
 
-    Vector3 connectPlayer;
-
+    GameObject webInstance;
     GameObject shitenInstance;
-
-
-
-
 
     private void Start()
     {
@@ -85,46 +79,46 @@ public class kariGameManager : MonoBehaviour
     }
    
     public void makeRope (Vector3 v,Quaternion r){
-
-        Destroy(webInstance);
-
-        shitenInstance = Instantiate(shitenPrefab, v, r) as GameObject;
+        Destroy(webInstance); //ぶち当てた最初のweb先端は削除
+        shitenInstance = Instantiate(shitenPrefab, v, r) as GameObject; //cahracterJointもちのshitenの先端生成
         shitenInstance.GetComponent<CharacterJoint>().connectedBody = player.GetComponent<Rigidbody>();
-
-
     }
 
+    public Vector3 GetShitenPos(){
+        return shitenPos;
+    }
 
-
-
-    void Update()
+    void Update() //update内も上下しっかり関係あり
     {
-        //hitting = webInstance.GetComponent<webPrefab>().hitTest();
 
-        /*if (hit){
-            bool One = true;
-            if(One){
-                shitenPos = webInstance.transform.position;
-                //shitenRot = webInstance.transform.rotation;
-                makeRope();
-                One = false;
-            }
-        }*/
 
-        if (OVRInput.GetDown(OVRInput.Button.PrimaryTouchpad))
+
+        var pointer = Pointer; // コントローラーを取得
+
+        if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
         {
-            shitenPos = webInstance.transform.position;
-            shitenRot = webInstance.transform.rotation;
-            makeRope(shitenPos, shitenRot);
+            Shot(pointer);
         }
-
         if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger))
         {
             Destroy(shitenInstance);
         }
 
-        var pointer = Pointer; // コントローラーを取得
-                               // コントローラーがない or LineRendererがなければ何もしない
+        if (OVRInput.GetDown(OVRInput.Button.PrimaryTouchpad)) //タッチパッドDown
+        {
+            shitenPos = webInstance.transform.position;
+            shitenRot = webInstance.transform.rotation;
+            makeRope(shitenPos, shitenRot);
+
+
+
+        }
+
+
+
+
+
+        // コントローラーがない or LineRendererがなければ何もしない
         if (pointer == null || _LaserPointerRenderer == null)
         {
             return;
@@ -145,11 +139,6 @@ public class kariGameManager : MonoBehaviour
         {
             // Rayがヒットしなかったら向いている方向にMaxDistance伸ばす
             _LaserPointerRenderer.SetPosition(1, pointerRay.origin + pointerRay.direction * _MaxDistance);
-        }
-
-        if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
-        {
-            Shot(pointer);
         }
 
 
