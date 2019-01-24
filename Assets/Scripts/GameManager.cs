@@ -1,65 +1,205 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+/*
+ * レーザーポインターを出すクラス
+ */
 
-public class GameManager : MonoBehaviour {
-    private int shitenPoint;
-    public GameObject shiten;
-    public GameObject player;
-    public GameObject web;
+public class GameManager : MonoBehaviour
+{
 
-	// Use this for initialization
-	void Start () {
-        shitenPoint = 20;
 
-	}
-	
-	// Update is called once per frame
-	void Update () {
-        if(Input.GetKey("j") && shitenPoint<100){
-            shitenUpPoint();
+    [SerializeField]
+    private Transform _RightHandAnchor; // 右手
+
+    [SerializeField]
+    private Transform _LeftHandAnchor;  // 左手
+
+    [SerializeField]
+    private Transform _CenterEyeAnchor; // 目の中心
+
+    [SerializeField]
+    private float _MaxDistance = 100.0f; // 距離
+
+    [SerializeField]
+    private LineRenderer _LaserPointerRenderer; // LineRenderer
+
+    [SerializeField]
+    private GameObject webPrefab;
+    [SerializeField]
+    private float webPower = 5000f;
+
+    [SerializeField]
+    private GameObject player;
+    [SerializeField]
+    private GameObject shitenPrefab;
+
+    Vector3 playerPos;
+    Vector3 shitenPos;
+    Vector3 henka;
+    Quaternion shitenRot;
+
+    Vector3 latestPos;
+    Vector3 playerSpeed;
+    Vector3 leaveSpeed;
+    Vector3 startSpeed;
+
+    Vector3 conAncer;
+
+    GameObject webInstance;
+    GameObject shitenInstance;
+
+    private void Start()
+    {
+        //スタート時の動き
+        startSpeed = new Vector3(0, 400f, 0);
+        player.GetComponent<Rigidbody>().AddForce(startSpeed);
+    }
+
+    // コントローラー
+    private Transform Pointer
+    {
+        get
+        {
+            // 現在アクティブなコントローラーを取得
+            var controller = OVRInput.GetActiveController();
+            if (controller == OVRInput.Controller.RTrackedRemote)
+            {
+                return _RightHandAnchor;
+            }
+            else if (controller == OVRInput.Controller.LTrackedRemote)
+            {
+                return _LeftHandAnchor;
+            }
+            // どちらも取れなければ目の間からビームが出る
+            return _CenterEyeAnchor;
         }
-        if(Input.GetKey("f") && shitenPoint>19){
-            shitenDownPoint();
+    }
+
+    //shiten発射クラス
+    public void Shot(Transform pointer)
+    {
+        webInstance = Instantiate(webPrefab, pointer.position, pointer.rotation) as GameObject;
+        webInstance.GetComponent<Rigidbody>().AddForce(webInstance.transform.forward * webPower);
+
+    }
+
+    //振り子生成クラス
+    public void makeRope (Vector3 v,Quaternion r){
+        Destroy(webInstance); //ぶち当てた最初のweb先端は削除
+        shitenInstance = Instantiate(shitenPrefab, v, r) as GameObject; //cahracterJointもちのshitenの先端生成
+        shitenInstance.GetComponent<CharacterJoint>().connectedBody = player.GetComponent<Rigidbody>();
+    }
+
+    //playerに送るshitenの位置
+    public Vector3 GetShitenPos(){
+        return shitenPos;
+    }
+
+    //普通のリリース
+    public void leaveDes1(){
+        desDes();
+    }
+    public void desDes()
+    {
+        Destroy(webInstance);
+        Destroy(shitenInstance);
+    }
+
+    //スピード出してリリース
+    public void leaveDes2(){
+        //leavePos = player.GetComponent<Rigidbody>().velocity;//速さは取得できてないんんだよ、だってrigトランスフォームで動かしてるわけだから
+        leaveSpeed = playerSpeed;
+        desDes2();
+    }
+    public void desDes2(){
+        Destroy(webInstance);
+        Destroy(shitenInstance);
+        player.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        hassya();
+    }
+    public void hassya(){
+        //*40ぐらいがちょうどいいみたい
+        player.GetComponent<Rigidbody>().AddForce(leaveSpeed*40);
+    }
+
+    //Log表示に送るleaveSpeed
+    public Vector3 GetLeaveSpeed(){
+        return leaveSpeed;
+    }
+
+
+
+
+    void Update() //update内も上下しっかり関係あり
+    {
+        //フレーム間でのスピードを測定、transformで強引に動かしてる時に使える！！！！！！
+        playerSpeed = (player.transform.position - latestPos) / Time.deltaTime;
+        latestPos = player.transform.position;
+
+        var pointer = Pointer; // コントローラーを取得
+
+        //トリガークリックでshitenInstance発射
+        if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
+        {
+            Shot(pointer);
         }
-        if(Input.GetKey("g")){
-            player.transform.position += new Vector3(1, 0, 0);
+
+        //トリガー離す、かつパッド押してない時にシンプルにjointから離れる
+        if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger))
+        {
+            if (!OVRInput.Get(OVRInput.Button.PrimaryTouchpad)){
+                leaveDes1();
+            }
+        }
+
+        //トリガー離す、かつパッド押してる時に速度もらってjointから飛ぶ
+        if (OVRInput.Get(OVRInput.Button.PrimaryTouchpad)&& OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger)){
+            leaveDes2();
+        }
+
+        //トリガー押しっぱなし、かつパッド押した時に、shitenが生成される
+        if (OVRInput.GetDown(OVRInput.Button.PrimaryTouchpad)&& OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger)) 
+        {
+            shitenPos = webInstance.transform.position;
+            shitenRot = webInstance.transform.rotation;
+            makeRope(shitenPos, shitenRot);
+        }
+
+        //パッド、トリガー押しっぱなしでshitenに近づく、rigidのpositionを直接書き換えている
+        if (OVRInput.Get(OVRInput.Button.PrimaryTouchpad) && OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger))
+        {
+                conAncer = player.transform.position - shitenInstance.transform.position;
+                shitenInstance.GetComponent<CharacterJoint>().connectedAnchor = conAncer;
         }
 
 
 
 
+        // コントローラーがない or LineRendererがなければ何もしない
+        if (pointer == null || _LaserPointerRenderer == null)
+        {
+            return;
+        }
+        // コントローラー位置からRayを飛ばす
+        Ray pointerRay = new Ray(pointer.position, pointer.forward);
 
-        //web.transform.position = (shiten.transform.position + player.transform.position) / 2;
+        // レーザーの起点
+        _LaserPointerRenderer.SetPosition(0, pointerRay.origin);
 
-        shiten.transform.position = player.transform.position + new Vector3(shitenPoint, 0, 0);
-
-        //shitenMove();
-
-        Debug.Log(shitenPoint);
-    }
-
-    //void LastUpdate(){
-        //float webScale = Vector3.Distance(player.transform.position, shiten.transform.position);
-        //web.transform.localScale = new Vector3(1.0f, webScale - 0.5f, 1.0f);
-    //}
-
-    public void shitenUpPoint(){
-        shitenPoint += 1;
-
-    }
-    public void shitenDownPoint(){
-        shitenPoint -= 1;
-
-    }
-    public void shitenMove(){
+        RaycastHit hitInfo;
+        if (Physics.Raycast(pointerRay, out hitInfo, _MaxDistance))
+        {
+            // Rayがヒットしたらそこまで
+            _LaserPointerRenderer.SetPosition(1, hitInfo.point);//1は終点の合図
+        }
+        else
+        {
+            // Rayがヒットしなかったら向いている方向にMaxDistance伸ばす
+            _LaserPointerRenderer.SetPosition(1, pointerRay.origin + pointerRay.direction * _MaxDistance);
+        }
 
 
-    }
-
-
-
-    public int GetShitenPoint(){
-        return shitenPoint;
     }
 }

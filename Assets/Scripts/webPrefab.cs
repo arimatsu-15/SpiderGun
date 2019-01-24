@@ -5,8 +5,6 @@ using UnityEngine;
 public class webPrefab : MonoBehaviour
 {
 
-    GameObject gameManager;
-
     // Use this for initialization
     void Start()
     {
@@ -19,11 +17,13 @@ public class webPrefab : MonoBehaviour
 
     }
 
-    void OnCollisionEnter(Collision collision)
+    //colliderだと微妙にうまくいかなかった
+    private void OnTriggerEnter(Collider other)
     {
-        Vector3 stopShiten = this.transform.position;
-        //this.GetComponent<Rigidbody>().velocity = Vector3.zero;//他のオブジェクトと衝突したら止まる
-        this.transform.position = stopShiten;
+        //web飛ばしいて止まるのはtag=stageのみ、tag忘れがち
+        if(other.gameObject.tag == "stage"){
+            this.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        }
     }
 
 }

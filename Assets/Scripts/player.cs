@@ -2,74 +2,29 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class player : MonoBehaviour
-{
-
-
-    [SerializeField]
-    private GameObject ShitenKPrefab;
-    public GameObject supershitenPrefab;
-    public GameObject playerllast;
-    private Rigidbody _rigidbody;
-    private CharacterJoint _characterjoint;
-    Vector3 leave_pos = new Vector3();
-    Vector3 oss;
+public class player : MonoBehaviour {
+    Vector3 playerPos;
+    Vector3 shitenPos;
+    Vector3 henka;
+    Vector3 nextPlayerPos;
+    float distance;
+    public GameObject gameManager;
     // Use this for initialization
-    void Start()
-    {
-        _rigidbody = this.GetComponent<Rigidbody>();
-        _characterjoint = this.GetComponent<CharacterJoint>();
+    void Start () {
+		
+	}
+	
+	// Update is called once per frame
+	void Update () {
 
-        oss = new Vector3(10, 10, 10);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-        if (Input.GetKeyDown("p"))
+        //パッド、トリガー押している時、お互いの位置から接近ベクトルを割り出す
+        if (OVRInput.Get(OVRInput.Button.PrimaryTouchpad) && OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger))
         {
-
-            var sShitenInstance = Instantiate(supershitenPrefab,oss, Quaternion.identity) as GameObject;
-            sShitenInstance.GetComponent<CharacterJoint>().connectedBody = playerllast.GetComponent<Rigidbody>();
-
+            playerPos = this.transform.position;
+            shitenPos = gameManager.GetComponent<GameManager>().GetShitenPos();
+            distance = Vector3.Distance(playerPos, shitenPos);
+            henka = (shitenPos - playerPos) / distance;//接近の単位ベクトルの算出
+            this.GetComponent<Rigidbody>().position += henka * 5; //velocityとかrigの世界を動かしてるわけではなくて、直接座標を変えてしまってる
         }
-
-
-        if (Input.GetKey("k"))
-        {
-            Debug.Log(_rigidbody.velocity);
-            leave_pos = _rigidbody.velocity;
-            leave_parent();
-        }
-
-        if (Input.GetKeyDown("l")){
-            var ShitenInstance = Instantiate(ShitenKPrefab) as GameObject;
-            ShitenInstance.GetComponent<Rigidbody>().AddForce(ShitenInstance.transform.forward * 5000f);
-        }
-
-
-
-        if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger))
-        {
-            leave_pos = _rigidbody.velocity;
-            leave_parent();
-        }
-
-
-    }
-
-   
-
-    public void leave_parent ()
-    {
-        //this._characterjoint.connectedBody = null;
-        Destroy(_characterjoint);
-        leave_stage();
-    }
-
-    public void leave_stage ()
-    {
-        _rigidbody.AddForce(leave_pos);
     }
 }
